@@ -1,0 +1,82 @@
+name: Watchdog
+
+on:
+  # 主要觸發：cron-job.org 呼叫 workflow_dispatch（09:53 morning、23:23 evening，見 CRON_JOBS.md）。
+  # GitHub 內建排程只作備援；同一天心跳只推一次（state/state.json 的 heartbeat_sent）。
+  # 刻意不接受 push / pull_request 觸發：repo 公開，不讓外部 PR 有機會執行這個 workflow。
+  schedule:
+    - cron: '47 2 * * *'      # 10:47 Asia/Taipei → morning 備援
+    - cron: '52 15 * * *'     # 23:52 Asia/Taipei → evening 備援
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'morning（心跳，同日只推一次）/ evening（只推新異常）'
+        type: choice
+        options: [morning, evening]
+        default: evening
+
+permissions:
+  contents: write             # 只用來 commit 本 repo 的 state/；讀其他 repo 用唯讀的 WATCHDOG_TOKEN
+
+concurrency:
+  group: ops-hub-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # 取分支最新狀態：排在後面的那次才看得到前一次寫入的 state
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Check and notify
+        env:
+          WATCHDOG_TOKEN: ${{ secrets.WATCHDOG_TOKEN }}
+          WATCHDOG_TG_TOKEN: ${{ secrets.WATCHDOG_TG_TOKEN }}
+          WATCHDOG_TG_CHAT: ${{ secrets.WATCHDOG_TG_CHAT }}
+          # schedule 依 cron 字串決定模式；dispatch 用輸入值
+          OPS_HUB_MODE: ${{ github.event_name == 'schedule' && (github.event.schedule == '47 2 * * *' && 'morning' || 'evening') || inputs.mode }}
+        run: python -m ops_hub.cli
+
+      - name: Commit state
+        if: always()
+        run: |
+          git config user.name  "ops-hub[bot]"
+          git config user.email "ops-hub[bot]@users.noreply.github.com"
+          git add state
+          if git diff --staged --quiet; then
+            echo "state 沒有變更。"
+            exit 0
+          fi
+          git commit -m "watch: $(TZ=Asia/Taipei date '+%F %H:%M')"
+          for i in 1 2 3; do
+            git pull --rebase -q origin "${GITHUB_REF_NAME}" && git push -q origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            sleep $((i * 5))
+          done
+          exit 1
+
+      # 看門狗自己壞掉時仍要通知。逾時被取消的 conclusion 是 cancelled，所以兩者都要判斷。
+      # 連 workflow 都沒觸發的情況，靠「早上沒收到心跳」發現。
+      - name: Notify on failure
+        if: failure() || cancelled()
+        env:
+          WATCHDOG_TG_TOKEN: ${{ secrets.WATCHDOG_TG_TOKEN }}
+          WATCHDOG_TG_CHAT: ${{ secrets.WATCHDOG_TG_CHAT }}
+        run: |
+          if [ -n "$WATCHDOG_TG_TOKEN" ]; then
+            curl -s -X POST "https://api.telegram.org/bot${WATCHDOG_TG_TOKEN}/sendMessage" \
+              -d chat_id="${WATCHDOG_TG_CHAT}" \
+              -d text="🛑 ops-hub 看門狗本身執行失敗或逾時：${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+              > /dev/null
+          fi

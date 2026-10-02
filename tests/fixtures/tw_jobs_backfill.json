@@ -1,0 +1,15 @@
+{
+ "total_count": 1,
+ "jobs": [
+  {
+   "id": 110552622257,
+   "run_id": 36916791886,
+   "name": "scrape",
+   "status": "completed",
+   "conclusion": "success",
+   "created_at": "2026-10-01T19:46:50Z",
+   "started_at": "2026-10-01T19:46:52Z",
+   "completed_at": "2026-10-02T00:58:23Z"
+  }
+ ]
+}

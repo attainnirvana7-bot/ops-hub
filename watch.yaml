@@ -1,0 +1,74 @@
+# ops-hub 監控設定。日常只需要改這個檔。
+#
+# 時間一律是台北時間。每個時段（slot）的意思：
+#   在 at 的前 10 分鐘到 at + grace_min 之間，必須至少建立一次 run。
+#   grace_min 要涵蓋該 repo 的 GitHub cron 備援時間，備援補上就算正常。
+#   grace 過後的第一次檢查（09:53 或 23:23）才會評估這個時段。
+#
+# days：daily / weekdays / [mon, tue, wed, thu, fri, sat, sun]
+# artifact 路徑樣板：{Y} {m} {d} {date}（以時段的台北日期展開）
+
+owner: attainnirvana7-bot
+timezone: Asia/Taipei
+
+minutes:
+  warn_at: 1500           # 私有 repo 合計
+  included: 2000          # 免費方案額度
+  per_repo_warn_at: 800   # 單一 repo
+
+duration:
+  window: 14              # 取近 14 次成功執行的中位數
+  factor: 3               # 超過中位數 3 倍就警告
+  min_seconds: 120        # 短於 2 分鐘的（guard 略過的執行）不列入，也不檢查
+
+token_warn_days: 14
+
+# 無法用 API 查詢到期日的 token，手動記錄。換新 token 時記得改這裡。
+# 看門狗自己的 WATCHDOG_TOKEN 到期日從 API 回應標頭自動取得，不用寫。
+tokens:
+  - name: cron-job.org 觸發用 token
+    expires: 2027-01-31
+
+targets:
+  - repo: conflict-monitor
+    workflow: daily-brief.yml
+    slots:
+      - {days: daily, at: "07:43", grace_min: 125}    # 涵蓋 09:47 的 GitHub cron 備援
+    artifact: "reports/{Y}/{date}.md"
+
+  - repo: US_Macro_Feeds
+    workflow: daily.yml
+    slots:
+      - {days: daily, at: "08:50", grace_min: 60}     # 涵蓋 09:30 備援
+    artifact: "reports/{Y}/{m}/{date}.md"
+
+  - repo: Rubbish_Clearance                            # 只推播、不 commit，沒有產出物可查
+    workflow: daily-notify.yml
+    slots:
+      - {days: daily, at: "07:00", grace_min: 45}
+
+  - repo: FSC_Corpus
+    workflow: daily.yml
+    slots:
+      - {days: weekdays, at: "18:07", grace_min: 120} # 涵蓋 19:37 備援
+    artifact:
+      path: "corpus/manifest/{date}.json"
+      date_slack_days: 1                             # 延遲到午夜後才跑時，manifest 會是隔天日期
+
+  - repo: TW_Stock_Investment_Strategy
+    workflow: scrape.yml
+    slots:
+      # title 比對 run-name「scrape · nightly」，區分同一個 workflow 的不同時段
+      - {name: nightly, days: daily, at: "22:40", grace_min: 40, title: nightly, max_run_min: 360}
+      - {name: update, days: [mon], at: "11:03", grace_min: 90, title: update, max_run_min: 120}
+    artifact:
+      commit_since_slot: data/fetch_log              # 夜間時段後 fetch_log 要有新 commit
+      only: weekdays                                 # 週末沒有交易資料
+      slot: nightly
+      severity: warn                                 # 颱風假等休市日會誤報，只列警告
+
+  - repo: USA_Stock_Investment_Strategy
+    workflow: fmp-run.yml
+    slots:
+      - {days: [wed, sat], at: "08:17", grace_min: 90} # 涵蓋 09:27 備援
+    artifact: "reports/{Y}/{date}.md"

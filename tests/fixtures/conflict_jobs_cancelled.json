@@ -1,0 +1,15 @@
+{
+ "total_count": 1,
+ "jobs": [
+  {
+   "id": 109267374980,
+   "run_id": 36524723722,
+   "name": "brief",
+   "status": "completed",
+   "conclusion": "cancelled",
+   "created_at": "2026-09-29T05:17:12Z",
+   "started_at": "2026-09-29T05:17:14Z",
+   "completed_at": "2026-09-29T05:42:29Z"
+  }
+ ]
+}
