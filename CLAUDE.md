@@ -39,8 +39,9 @@ ops_hub/
   minutes.py    本月分鐘數（帳單 / 估算 + 快取）
   tokens.py     token 到期提醒
   state.py      心跳日期、已推播警示、分鐘數快取
-  report.py     Telegram 訊息
-  notify.py     Telegram 推播（專用 bot）
+  report.py     Telegram 訊息（HTML：標題列＋摘要＋可展開細節＋按鈕）
+  notify.py     Telegram 推播（專用 bot）、主題退路、切割、--telegram-discover
+docs/TELEGRAM_STYLE.md           五個專案共用的推播版面規格
 tests/          unittest；fixtures 是錄下來的真實 API 回應
 state/state.json
 ```
@@ -112,7 +113,11 @@ startup_failure / action_required / stale` 一律算異常。例外：被 concur
 **每項檢查獨立 try/except。** 任何錯誤都會變成「檢查失敗」列在報告裡，不會中斷其他檢查；
 該 repo 會被算成不正常（❌），所以「看門狗讀不到資料」不會偽裝成「一切正常」。
 
-**公開 repo 的 log 紀律。** `gh.py` 只記狀態碼與路徑；`notify.py` 不記 token；
+**推播版面依 `docs/TELEGRAM_STYLE.md`。** 內容一律經 `notify.esc()`；切割以區塊為單位、
+按鈕只在最後一則。主題不存在時不帶主題重送並標示，不得靜默失敗。
+
+**公開 repo 的 log 紀律。** `gh.py` 只記狀態碼與路徑；`notify.py` 不記 token、chat id、回應本文
+（requests 例外訊息含帶 token 的網址，只記例外類型）；
 urllib3 的 debug log 關閉（它會印完整網址）。state 只存去重必需的資料，詳細報告只走 Telegram。
 
 ---
@@ -124,6 +129,8 @@ export WATCHDOG_TOKEN=...                        # 本機測試用
 python -m ops_hub.cli --check-token              # 逐 repo 驗證 Metadata / Actions / Contents 讀取、帳單 API、到期日
 python -m ops_hub.cli --dry-run --mode morning   # 印出心跳內容，不推播、不寫 state
 python -m ops_hub.cli --dry-run --mode evening   # 印出晚上會推的新異常
+python -m ops_hub.cli --tg-payload --mode morning  # 印出送給 Telegram 的 JSON payload（chat id 以佔位字串代替）
+python -m ops_hub.cli --telegram-discover        # 用 getUpdates 列出群組 chat id 與主題 id（只讀；只在本機執行）
 python -m ops_hub.cli -v                         # 完整執行（詳細 log）
 python -m unittest discover -s tests -t . -v     # 測試（不需網路）
 ```
@@ -138,7 +145,8 @@ python -m unittest discover -s tests -t . -v     # 測試（不需網路）
 |---|---|---|---|
 | `WATCHDOG_TOKEN` | Secret | 是 | fine-grained token：6 個監控 repo + ops-hub，Actions / Contents / Metadata **Read**；帳號層級 Plan: Read（帳單 API） |
 | `WATCHDOG_TG_TOKEN` | Secret | 是 | 看門狗專用 Telegram bot（BotFather） |
-| `WATCHDOG_TG_CHAT` | Secret | 是 | 推播對象 chat id |
+| `WATCHDOG_TG_CHAT` | Secret | 是 | 推播對象 chat id（主題群組的 chat id） |
+| `WATCHDOG_TG_THREAD` | Variable | 否 | 群組主題 id；未設定時發到 chat 本身。主題不存在時改發一般區並標 ⚠️ |
 | `OPS_HUB_MODE` | env | 否 | morning / evening / auto（workflow 自動設定） |
 | `OPS_HUB_CONFIG` / `OPS_HUB_STATE` | env | 否 | 預設 `watch.yaml` / `state/state.json` |
 
