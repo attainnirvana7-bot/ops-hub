@@ -27,7 +27,7 @@ token_warn_days: 14
 # 看門狗自己的 WATCHDOG_TOKEN 到期日從 API 回應標頭自動取得，不用寫。
 tokens:
   - name: cron-job.org 觸發用 token
-    expires: 2027-01-31
+    expires: 2027-10-05
 
 targets:
   - repo: conflict-monitor
