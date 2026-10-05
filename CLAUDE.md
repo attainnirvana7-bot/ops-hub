@@ -52,8 +52,8 @@ state/state.json
 | repo | workflow | 時段（台北） | grace | 產出物 | 觸發 |
 |---|---|---|---|---|---|
 | conflict-monitor | daily-brief.yml | 每日 07:43 | 125 分（含 09:47 備援） | `reports/{Y}/{date}.md` | cron-job.org + GitHub 備援 |
-| US_Macro_Feeds | daily.yml | 每日 08:50 | 60 分（含 09:30 備援） | `reports/{Y}/{m}/{date}.md` | 同上 |
-| Rubbish_Clearance | daily-notify.yml | 每日 07:00 | 45 分 | 無（只推播） | 只有 cron-job.org |
+| US_Macro_Feeds | daily.yml | 每日 08:30 | 80 分（含 09:30 備援） | `reports/{Y}/{m}/{date}.md` | 同上 |
+| Rubbish_Clearance | daily-notify.yml | 每日 06:30 | 45 分 | 無（只推播） | 只有 cron-job.org |
 | FSC_Corpus | daily.yml | 平日 18:07 | 120 分（含 19:37 備援） | `corpus/manifest/{date}.json`（容許 +1 天） | cron-job.org + GitHub 備援 |
 | TW_Stock_Investment_Strategy | scrape.yml | nightly 每日 22:40、update 週一 11:03 | 40 / 90 分 | 平日夜間時段後 `data/fetch_log` 要有 commit（警告級） | 同上；另有 09:07 morning 純 GitHub 備援 |
 | USA_Stock_Investment_Strategy（公開） | fmp-run.yml | 週三、六 08:17 | 90 分（含 09:27 備援） | `reports/{Y}/{date}.md` | 同上 |

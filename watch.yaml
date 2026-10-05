@@ -39,13 +39,13 @@ targets:
   - repo: US_Macro_Feeds
     workflow: daily.yml
     slots:
-      - {days: daily, at: "08:50", grace_min: 60}     # 涵蓋 09:30 備援
+      - {days: daily, at: "08:30", grace_min: 80}     # cron-job.org 實際 08:30；涵蓋 09:30 備援
     artifact: "reports/{Y}/{m}/{date}.md"
 
   - repo: Rubbish_Clearance                            # 只推播、不 commit，沒有產出物可查
     workflow: daily-notify.yml
     slots:
-      - {days: daily, at: "07:00", grace_min: 45}
+      - {days: daily, at: "06:30", grace_min: 45}     # cron-job.org 實際 06:30
 
   - repo: FSC_Corpus
     workflow: daily.yml

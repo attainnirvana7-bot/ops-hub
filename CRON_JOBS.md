@@ -29,10 +29,10 @@ URL 格式：`https://api.github.com/repos/attainnirvana7-bot/<repo>/actions/wor
 
 | # | 標題建議 | 時間（台北） | URL | Request body |
 |---|---|---|---|---|
-| 1 | 垃圾清運通知 | 每日 07:00 | `https://api.github.com/repos/attainnirvana7-bot/Rubbish_Clearance/actions/workflows/daily-notify.yml/dispatches` | `{"ref":"main"}` |
+| 1 | 垃圾清運通知 | 每日 06:30 | `https://api.github.com/repos/attainnirvana7-bot/Rubbish_Clearance/actions/workflows/daily-notify.yml/dispatches` | `{"ref":"main"}` |
 | 2 | 衝突熱點日報 | 每日 07:43 | `https://api.github.com/repos/attainnirvana7-bot/conflict-monitor/actions/workflows/daily-brief.yml/dispatches` | `{"ref":"main","inputs":{"skip_if_exists":"true"}}` |
 | 3 | 美股選股回測 | 週三、週六 08:17 | `https://api.github.com/repos/attainnirvana7-bot/USA_Stock_Investment_Strategy/actions/workflows/fmp-run.yml/dispatches` | `{"ref":"main","inputs":{"scheduled":"true"}}` |
-| 4 | 美國總經日報 | 每日 08:50 | `https://api.github.com/repos/attainnirvana7-bot/US_Macro_Feeds/actions/workflows/daily.yml/dispatches` | `{"ref":"main"}` |
+| 4 | 美國總經日報 | 每日 08:30 | `https://api.github.com/repos/attainnirvana7-bot/US_Macro_Feeds/actions/workflows/daily.yml/dispatches` | `{"ref":"main"}` |
 | 5 | 看門狗心跳 | 每日 09:53 | `https://api.github.com/repos/attainnirvana7-bot/ops-hub/actions/workflows/watch.yml/dispatches` | `{"ref":"main","inputs":{"mode":"morning"}}` |
 | 6 | 台股財報月營收 | 週一 11:03 | `https://api.github.com/repos/attainnirvana7-bot/TW_Stock_Investment_Strategy/actions/workflows/scrape.yml/dispatches` | `{"ref":"main","inputs":{"mode":"update","scheduled":"true"}}` |
 | 7 | 金管會語料擷取 | 週一至週五 18:07 | `https://api.github.com/repos/attainnirvana7-bot/FSC_Corpus/actions/workflows/daily.yml/dispatches` | `{"ref":"main","inputs":{"scheduled":"true"}}` |
