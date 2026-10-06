@@ -8,14 +8,14 @@ from .helpers import make_cfg, utc
 
 FSC = {"repo": "FSC_Corpus", "workflow": "daily.yml",
        "slots": [{"days": "weekdays", "at": "18:07", "grace_min": 120}]}
-USA = {"repo": "USA_Stock_Investment_Strategy", "workflow": "fmp-run.yml",
-       "slots": [{"days": ["wed", "sat"], "at": "08:17", "grace_min": 90}]}
+SAMPLE = {"repo": "Sample_Repo", "workflow": "sample.yml",
+        "slots": [{"days": ["wed", "sat"], "at": "08:17", "grace_min": 90}]}
 
 
 class ScheduleTest(unittest.TestCase):
     def setUp(self):
-        self.cfg = make_cfg([FSC, USA])
-        self.fsc, self.usa = self.cfg.targets
+        self.cfg = make_cfg([FSC, SAMPLE])
+        self.fsc, self.sample = self.cfg.targets
 
     def test_parse_days(self):
         self.assertEqual(parse_days("weekdays"), frozenset(range(5)))
@@ -43,17 +43,17 @@ class ScheduleTest(unittest.TestCase):
 
     def test_specific_weekdays(self):
         # 週三 09:53：當日 08:17 + 90 分 = 09:47 已過
-        got = instances(self.usa, utc("2026-09-30T01:53:00Z"), self.cfg.tz)
+        got = instances(self.sample, utc("2026-09-30T01:53:00Z"), self.cfg.tz)
         self.assertEqual([i.date.isoformat() for i in got], ["2026-09-30"])
         # 週四 09:53：週三的 deadline 已超過 24 小時，週四沒有時段
-        self.assertEqual(instances(self.usa, utc("2026-10-01T01:53:00Z"), self.cfg.tz), [])
+        self.assertEqual(instances(self.sample, utc("2026-10-01T01:53:00Z"), self.cfg.tz), [])
 
     def test_grace_not_yet_passed(self):
         # 週三 09:40：deadline 09:47 還沒到
-        self.assertEqual(instances(self.usa, utc("2026-09-30T01:40:00Z"), self.cfg.tz), [])
+        self.assertEqual(instances(self.sample, utc("2026-09-30T01:40:00Z"), self.cfg.tz), [])
 
     def test_slot_uses_taipei_date(self):
-        got = instances(self.usa, utc("2026-09-30T01:53:00Z"), self.cfg.tz)[0]
+        got = instances(self.sample, utc("2026-09-30T01:53:00Z"), self.cfg.tz)[0]
         self.assertEqual(got.start, dt.datetime(2026, 9, 30, 8, 17, tzinfo=self.cfg.tz))
         self.assertEqual(got.start.astimezone(dt.timezone.utc).date().isoformat(), "2026-09-30")
 

@@ -80,7 +80,7 @@ class EstimateTest(unittest.TestCase):
 class BillingTest(unittest.TestCase):
     def test_billing_preferred(self):
         gh, sess = make_gh({f"/users/{OWNER}/settings/billing/usage": fixture("billing_usage.json")})
-        m = minutes.compute(gh, OWNER, [TW, "conflict-monitor"], {"USA_Stock_Investment_Strategy", "ops-hub"},
+        m = minutes.compute(gh, OWNER, [TW, "conflict-monitor"], {"Public_Repo", "ops-hub"},
                             utc("2026-10-02T05:00:00Z"), {})
         self.assertEqual(m.source, "帳單")
         self.assertEqual(m.per_repo, {TW: 641, "conflict-monitor": 4})   # 318 + 322.5 進位；排除公開 repo 與儲存量

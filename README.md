@@ -4,7 +4,7 @@
 
 ```
 🛡 ops-hub 心跳｜2026-10-05（一）
-✅ 7/7 正常｜本月 Actions 約 412 分（帳單）
+✅ 6/6 正常｜本月 Actions 約 412 分（帳單）
 ```
 
 有異常時，細節放在可展開的引用區塊，底部的「📄 完整報告」按鈕連到最嚴重那筆異常的 Actions 執行頁。
@@ -26,7 +26,7 @@
 3. 建立 `WATCHDOG_TOKEN`（fine-grained token；權限見 CLAUDE.md），連同 bot token、chat id
    一起存成 Secrets：`WATCHDOG_TOKEN`、`WATCHDOG_TG_TOKEN`、`WATCHDOG_TG_CHAT`。
 4. 到 Actions → Watchdog → Run workflow，mode 選 morning：應該會收到心跳。
-5. 合併 FSC_Corpus、TW_Stock、USA_Stock 的 PR 之後，照 `CRON_JOBS.md` 建立 cron-job.org 排程。
+5. 合併 FSC_Corpus、TW_Stock 的 PR 之後，照 `CRON_JOBS.md` 建立 cron-job.org 排程。
 6. 把 cron-job.org token 的到期日寫進 `watch.yaml`。
 
 ## 設定 Telegram 主題群組

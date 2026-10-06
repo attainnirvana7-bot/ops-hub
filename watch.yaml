@@ -74,9 +74,3 @@ targets:
       only: weekdays                                 # 週末沒有交易資料
       slot: nightly
       severity: warn                                 # 颱風假等休市日會誤報，只列警告
-
-  - repo: USA_Stock_Investment_Strategy
-    workflow: fmp-run.yml
-    slots:
-      - {days: [wed, sat], at: "08:17", grace_min: 90} # 涵蓋 09:27 備援
-    artifact: "reports/{Y}/{date}.md"

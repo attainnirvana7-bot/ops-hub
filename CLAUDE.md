@@ -1,6 +1,6 @@
 # ops-hub
 
-個人專案的 GitHub Actions 看門狗。每天早晚各檢查一次 7 個 repo 的每日 workflow，
+個人專案的 GitHub Actions 看門狗。每天早晚各檢查一次 6 個 repo 的每日 workflow，
 推播到 Telegram：早上一定發一則「心跳」，晚上只在有新異常時才發。
 **「早上沒收到心跳」本身就是警訊。**
 
@@ -58,9 +58,8 @@ state/state.json
 | Rubbish_Clearance | daily-notify.yml | 每日 06:30 | 45 分 | 無（只推播） | 只有 cron-job.org |
 | FSC_Corpus | daily.yml | 平日 18:07 | 120 分（含 19:37 備援） | `corpus/manifest/{date}.json`（容許 +1 天） | cron-job.org + GitHub 備援 |
 | TW_Stock_Investment_Strategy | scrape.yml | nightly 每日 22:40、update 週一 11:03 | 40 / 90 分 | 平日夜間時段後 `data/fetch_log` 要有 commit（警告級） | 同上；另有 09:07 morning 純 GitHub 備援 |
-| USA_Stock_Investment_Strategy（公開） | fmp-run.yml | 週三、六 08:17 | 90 分（含 09:27 備援） | `reports/{Y}/{date}.md` | 同上 |
 
-FSC、TW、USA 三個 repo 的外部觸發與 guard 由各自的 PR 加入（`scheduled` input）。
+FSC、TW 兩個 repo 的外部觸發與 guard 由各自的 PR 加入（`scheduled` input）。
 **PR 合併前**：TW 的 run 標題還是 workflow 名稱，看門狗會把它視為可以對應任何時段，不會誤判成未觸發。
 
 ---
@@ -104,7 +103,7 @@ startup_failure / action_required / stale` 一律算異常。例外：被 concur
 回補期的 5 小時不會被拿去跟 3 分鐘的 morning 比。短於 2 分鐘的 run（guard 略過的）
 不列入中位數；樣本少於 5 個時不判斷。
 
-**guard 用「12 小時內有成功 run」判斷，不看日期**（FSC / TW / USA）。延遲的備援可能
+**guard 用「12 小時內有成功 run」判斷，不看日期**（FSC / TW）。延遲的備援可能
 跨過台北午夜才跑，用日期判斷會以為今天還沒跑。只有 success 才算，所以主要觸發失敗時，
 備援會自動重試一次。
 
@@ -144,7 +143,7 @@ python -m unittest discover -s tests -t . -v     # 測試（不需網路）
 
 | 名稱 | 種類 | 必要 | 用途 |
 |---|---|---|---|
-| `WATCHDOG_TOKEN` | Secret | 是 | fine-grained token：7 個監控 repo + ops-hub，Actions / Contents / Metadata **Read**；帳號層級 Plan: Read（帳單 API） |
+| `WATCHDOG_TOKEN` | Secret | 是 | fine-grained token：6 個監控 repo + ops-hub，Actions / Contents / Metadata **Read**；帳號層級 Plan: Read（帳單 API） |
 | `WATCHDOG_TG_TOKEN` | Secret | 是 | 看門狗專用 Telegram bot（BotFather） |
 | `WATCHDOG_TG_CHAT` | Secret | 是 | 推播對象 chat id（主題群組的 chat id） |
 | `WATCHDOG_TG_THREAD` | Variable | 否 | 群組主題 id；未設定時發到 chat 本身。主題不存在時改發一般區並標 ⚠️ |
