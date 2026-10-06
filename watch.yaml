@@ -36,6 +36,12 @@ targets:
       - {days: daily, at: "07:43", grace_min: 125}    # 涵蓋 09:47 的 GitHub cron 備援
     artifact: "reports/{Y}/{date}.md"
 
+  - repo: Intl_Reg_Feeds
+    workflow: daily.yml
+    slots:
+      - {days: daily, at: "07:17", grace_min: 100}    # 涵蓋 08:47 的 GitHub cron 備援（07:17+100=08:57）
+    artifact: "reports/{Y}/{m}/{date}.md"             # 每天都寫（沒有新發布時寫「今日無新發布」）
+
   - repo: US_Macro_Feeds
     workflow: daily.yml
     slots:

@@ -1,6 +1,6 @@
 # Telegram 推播版面規格
 
-五個專案（ops-hub、US_Macro_Feeds、conflict-monitor、FSC_Corpus、Rubbish_Clearance）都推播到同一個
+六個專案（ops-hub、US_Macro_Feeds、conflict-monitor、FSC_Corpus、Rubbish_Clearance、Intl_Reg_Feeds）都推播到同一個
 開啟「主題（Topics）」的私人群組，每個專案一個主題。不建共用套件：各 repo 依本規格各自實作，
 參考實作是本 repo 的 `ops_hub/notify.py`。
 
@@ -23,6 +23,7 @@
 | ops-hub | 🛡 ops-hub 心跳／ops-hub 異常 | `✅ 6/6 正常｜本月約 412 分`、各級異常數 | 最嚴重那筆異常的 Actions run 頁；全部正常不附 |
 | US_Macro_Feeds | 🏛 Fed／BLS 總經 | 新項目／重點數、下次 FOMC、10Y 與 10Y−2Y | 當日 `reports/Y/m/date.md` |
 | conflict-monitor | 🌐 全球衝突熱點 | 新增則數、熱度前兩區、摘要降級警示 | 當日 `reports/Y/date.md` |
+| Intl_Reg_Feeds | 🏦 國際監理動態 | 新增則數與各類型數、來源正常數、摘要降級／來源異常警示 | 當日 `reports/Y/m/date.md` |
 | FSC_Corpus | ⚖️ 金管會監理動態 | 則數（施政計畫對齊數）、發文量異常 | 當日 `briefs/Y/m/date.md` |
 | Rubbish_Clearance | 🗑 新北垃圾清運 · {地點} | 清運點筆數 | 無 |
 
@@ -57,6 +58,7 @@ Telegram 單則上限 4096 字，切割上限取 3800（留給續則標記與主
 | ops-hub | `WATCHDOG_TG_CHAT` | `WATCHDOG_TG_THREAD` |
 | US_Macro_Feeds | `TELEGRAM_CHAT_ID` | `TELEGRAM_THREAD_ID` |
 | conflict-monitor | `TELEGRAM_CHAT_ID` | `TELEGRAM_THREAD_ID` |
+| Intl_Reg_Feeds | `TELEGRAM_CHAT_ID` | `TELEGRAM_THREAD_ID` |
 | FSC_Corpus | `REGWATCH_TG_CHAT` | `REGWATCH_TG_THREAD` |
 | Rubbish_Clearance | `TELEGRAM_CHAT_ID` | `TELEGRAM_THREAD_ID` |
 

@@ -1,6 +1,6 @@
 # ops-hub
 
-個人專案的 GitHub Actions 看門狗。每天早晚各檢查一次 6 個 repo 的每日 workflow，
+個人專案的 GitHub Actions 看門狗。每天早晚各檢查一次 7 個 repo 的每日 workflow，
 推播到 Telegram：早上一定發一則「心跳」，晚上只在有新異常時才發。
 **「早上沒收到心跳」本身就是警訊。**
 
@@ -41,7 +41,7 @@ ops_hub/
   state.py      心跳日期、已推播警示、分鐘數快取
   report.py     Telegram 訊息（HTML：標題列＋摘要＋可展開細節＋按鈕）
   notify.py     Telegram 推播（專用 bot）、主題退路、切割、--telegram-discover
-docs/TELEGRAM_STYLE.md           五個專案共用的推播版面規格
+docs/TELEGRAM_STYLE.md           六個專案共用的推播版面規格
 tests/          unittest；fixtures 是錄下來的真實 API 回應
 state/state.json
 ```
@@ -53,6 +53,7 @@ state/state.json
 | repo | workflow | 時段（台北） | grace | 產出物 | 觸發 |
 |---|---|---|---|---|---|
 | conflict-monitor | daily-brief.yml | 每日 07:43 | 125 分（含 09:47 備援） | `reports/{Y}/{date}.md` | cron-job.org + GitHub 備援 |
+| Intl_Reg_Feeds | daily.yml | 每日 07:17 | 100 分（含 08:47 備援） | `reports/{Y}/{m}/{date}.md` | cron-job.org + GitHub 備援 |
 | US_Macro_Feeds | daily.yml | 每日 08:30 | 80 分（含 09:30 備援） | `reports/{Y}/{m}/{date}.md` | 同上 |
 | Rubbish_Clearance | daily-notify.yml | 每日 06:30 | 45 分 | 無（只推播） | 只有 cron-job.org |
 | FSC_Corpus | daily.yml | 平日 18:07 | 120 分（含 19:37 備援） | `corpus/manifest/{date}.json`（容許 +1 天） | cron-job.org + GitHub 備援 |
@@ -143,7 +144,7 @@ python -m unittest discover -s tests -t . -v     # 測試（不需網路）
 
 | 名稱 | 種類 | 必要 | 用途 |
 |---|---|---|---|
-| `WATCHDOG_TOKEN` | Secret | 是 | fine-grained token：6 個監控 repo + ops-hub，Actions / Contents / Metadata **Read**；帳號層級 Plan: Read（帳單 API） |
+| `WATCHDOG_TOKEN` | Secret | 是 | fine-grained token：7 個監控 repo + ops-hub，Actions / Contents / Metadata **Read**；帳號層級 Plan: Read（帳單 API） |
 | `WATCHDOG_TG_TOKEN` | Secret | 是 | 看門狗專用 Telegram bot（BotFather） |
 | `WATCHDOG_TG_CHAT` | Secret | 是 | 推播對象 chat id（主題群組的 chat id） |
 | `WATCHDOG_TG_THREAD` | Variable | 否 | 群組主題 id；未設定時發到 chat 本身。主題不存在時改發一般區並標 ⚠️ |
