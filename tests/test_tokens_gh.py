@@ -3,7 +3,7 @@ import os
 import unittest
 from unittest import mock
 
-from ops_hub import config, notify, tokens
+from ops_hub import config, tokens
 from ops_hub.gh import GitHubError, parse_expiry
 
 from .helpers import Resp, Seq, make_cfg, make_gh, utc
@@ -69,18 +69,6 @@ class EnvTest(unittest.TestCase):
         cfg = config.from_dict({"owner": "o", "targets": [
             {"repo": "r", "workflow": "w.yml", "slots": [{"at": 463}]}]})     # YAML 1.1 的 07:43
         self.assertEqual(cfg.targets[0].slots[0].at, dt.time(7, 43))
-
-
-class NotifyTest(unittest.TestCase):
-    def test_chunks(self):
-        text = "\n".join(["x" * 100] * 80)
-        parts = notify.chunks(text, 1000)
-        self.assertTrue(all(len(p) <= 1000 for p in parts))
-        self.assertEqual("\n".join(parts), text)
-
-    def test_missing_secret_returns_false(self):
-        with mock.patch.dict(os.environ, {"WATCHDOG_TG_TOKEN": "", "WATCHDOG_TG_CHAT": ""}):
-            self.assertFalse(notify.send("hi"))
 
 
 if __name__ == "__main__":

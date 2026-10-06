@@ -66,7 +66,11 @@ class RunTest(unittest.TestCase):
         s = Sender()
         code, st = self.go(MORNING, "morning", routes(GOOD_CM, GOOD_RB), s)
         self.assertEqual(code, 0)
-        self.assertEqual(s.sent, ["✅ 2/2 正常｜本月 Actions 約 120 分（帳單）"])
+        msg = s.sent[0]
+        self.assertEqual(msg.header, ["<b>🛡 ops-hub 心跳</b>｜2026-10-02（五）",
+                                      "✅ 2/2 正常｜本月 Actions 約 120 分（帳單）"])
+        self.assertEqual(msg.blocks, [])
+        self.assertIsNone(msg.button_url)                                  # 全部正常不附按鈕
         self.assertEqual(st.heartbeat_sent, "2026-10-02")
 
     def test_heartbeat_once_per_day(self):
@@ -80,7 +84,7 @@ class RunTest(unittest.TestCase):
         s = Sender()
         code, st = self.go(utc("2026-10-02T02:47:00Z"), "morning", routes(GOOD_CM, GOOD_RB), s)
         self.assertEqual(len(s.sent), 1)
-        self.assertTrue(s.sent[0].startswith("✅"))
+        self.assertTrue(s.sent[0].header[1].startswith("✅"))
 
     def test_send_failure_exit_code(self):
         code, st = self.go(MORNING, "morning", routes(GOOD_CM, GOOD_RB), Sender(ok=False))
@@ -90,8 +94,8 @@ class RunTest(unittest.TestCase):
     def test_one_repo_broken_others_still_checked(self):
         s = Sender()
         self.go(MORNING, "morning", routes(GOOD_CM, GOOD_RB, rb_broken=True), s)
-        msg = s.sent[0]
-        self.assertTrue(msg.startswith("⚠️ 1/2 正常"))
+        msg = s.sent[0].text
+        self.assertTrue(s.sent[0].header[1].startswith("⚠️ 1/2 正常"))
         self.assertIn("Rubbish_Clearance — 檢查失敗", msg)
         self.assertIn("HTTP 500", msg)
         self.assertNotIn("conflict-monitor —", msg)
@@ -100,8 +104,10 @@ class RunTest(unittest.TestCase):
         s = Sender()
         bad = [make_run(9, "2026-10-01T23:43:00Z", conclusion="cancelled")]
         self.go(MORNING, "morning", routes(bad, GOOD_RB), s)
-        self.assertIn("conflict-monitor — 執行異常", s.sent[0])
-        self.assertIn("https://github.com/attainnirvana7-bot/conflict-monitor/actions/runs/9", s.sent[0])
+        self.assertIn("conflict-monitor — 執行異常", s.sent[0].text)
+        url = "https://github.com/attainnirvana7-bot/conflict-monitor/actions/runs/9"
+        self.assertIn(f'<a href="{url}">', s.sent[0].text)
+        self.assertEqual(s.sent[0].button_url, url)                        # 按鈕連到最嚴重那筆的 run
 
     def test_evening_silent_when_ok(self):
         s = Sender()
@@ -120,8 +126,9 @@ class RunTest(unittest.TestCase):
                                       repo="Rubbish_Clearance", title="Daily NTPC Rubbish Notify")]
         self.go(EVENING, "evening", routes(bad, rb_fail), s)
         self.assertEqual(len(s.sent), 1)
-        self.assertIn("Rubbish_Clearance — 執行異常", s.sent[0])
-        self.assertNotIn("conflict-monitor", s.sent[0].split("\n", 1)[1])
+        self.assertIn("Rubbish_Clearance — 執行異常", s.sent[0].text)
+        self.assertTrue(s.sent[0].header[0].startswith("<b>🛡 ops-hub 異常</b>"))
+        self.assertNotIn("conflict-monitor", s.sent[0].text)
 
     def test_dry_run_does_not_send_or_save(self):
         s = Sender()
@@ -138,10 +145,10 @@ class RunTest(unittest.TestCase):
             {"product": "actions", "unitType": "minutes", "quantity": 700, "repositoryName": "FSC"}]}
         s = Sender()
         self.go(MORNING, "morning", r, s)
-        self.assertTrue(s.sent[0].startswith("⚠️ 2/2 正常｜本月 Actions 約 1,600 分"))
-        self.assertIn("用量偏高", s.sent[0])
-        self.assertIn("TW — 分鐘數偏高", s.sent[0])
-        self.assertNotIn("FSC — 分鐘數偏高", s.sent[0])
+        self.assertTrue(s.sent[0].header[1].startswith("⚠️ 2/2 正常｜本月 Actions 約 1,600 分"))
+        self.assertIn("用量偏高", s.sent[0].text)
+        self.assertIn("TW — 分鐘數偏高", s.sent[0].text)
+        self.assertNotIn("FSC — 分鐘數偏高", s.sent[0].text)
 
     def test_auto_mode(self):
         self.assertEqual(cli.resolve_mode("auto", MORNING, self.cfg), "morning")

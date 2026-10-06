@@ -45,6 +45,8 @@ jobs:
           WATCHDOG_TOKEN: ${{ secrets.WATCHDOG_TOKEN }}
           WATCHDOG_TG_TOKEN: ${{ secrets.WATCHDOG_TG_TOKEN }}
           WATCHDOG_TG_CHAT: ${{ secrets.WATCHDOG_TG_CHAT }}
+          # 群組主題 id（不是機密，放 Variables）；未設定時發到 chat 本身，與舊行為相同
+          WATCHDOG_TG_THREAD: ${{ vars.WATCHDOG_TG_THREAD }}
           # schedule 依 cron 字串決定模式；dispatch 用輸入值
           OPS_HUB_MODE: ${{ github.event_name == 'schedule' && (github.event.schedule == '47 2 * * *' && 'morning' || 'evening') || inputs.mode }}
         run: python -m ops_hub.cli
@@ -73,10 +75,19 @@ jobs:
         env:
           WATCHDOG_TG_TOKEN: ${{ secrets.WATCHDOG_TG_TOKEN }}
           WATCHDOG_TG_CHAT: ${{ secrets.WATCHDOG_TG_CHAT }}
+          WATCHDOG_TG_THREAD: ${{ vars.WATCHDOG_TG_THREAD }}
+          TEXT: "🛑 ops-hub 看門狗本身執行失敗或逾時：${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        # 回應內容含 chat 資訊，一律不印出。主題不存在時改發到一般區並標示，不靜默失敗。
         run: |
-          if [ -n "$WATCHDOG_TG_TOKEN" ]; then
-            curl -s -X POST "https://api.telegram.org/bot${WATCHDOG_TG_TOKEN}/sendMessage" \
-              -d chat_id="${WATCHDOG_TG_CHAT}" \
-              -d text="🛑 ops-hub 看門狗本身執行失敗或逾時：${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-              > /dev/null
+          [ -n "$WATCHDOG_TG_TOKEN" ] || exit 0
+          api="https://api.telegram.org/bot${WATCHDOG_TG_TOKEN}/sendMessage"
+          if [ -n "$WATCHDOG_TG_THREAD" ]; then
+            resp=$(curl -s -X POST "$api" -d chat_id="$WATCHDOG_TG_CHAT" \
+              -d message_thread_id="$WATCHDOG_TG_THREAD" --data-urlencode text="$TEXT" || true)
+            case "$resp" in
+              *"thread not found"*|*TOPIC_CLOSED*|*TOPIC_DELETED*|*TOPIC_ID_INVALID*)
+                TEXT="⚠️ 主題設定有誤（WATCHDOG_TG_THREAD 指向的主題不存在或已關閉），本則改發到群組一般區。"$'\n'"$TEXT" ;;
+              *) exit 0 ;;
+            esac
           fi
+          curl -s -X POST "$api" -d chat_id="$WATCHDOG_TG_CHAT" --data-urlencode text="$TEXT" > /dev/null
