@@ -168,4 +168,7 @@ fine-grained token 的寫入權限無法用 API 安全地測試，換 token 時�
 - 相依套件只用 requests、PyYAML；測試用 unittest
 - 時間一律以 `Asia/Taipei` 解讀 watch.yaml；GitHub API 時間是 UTC
 - 新增監控對象：在 `watch.yaml` 加一筆，在 `CRON_JOBS.md` 加對應排程，
-  並確認 grace 涵蓋備援、`at + grace` 早於 09:53 或 23:23
+  並確認 grace 涵蓋備援、`at + grace` 早於 09:53 或 23:23。
+  新增監控對象當天，上線前的時段會被報未觸發，屬正常現象（看門狗不知道上線時間，
+  例：Intl_Reg_Feeds 10/6 中午上線，當晚報「10/06 07:17 時段沒有任何執行」）。
+  這類異常只推一次，隔天心跳只回看 24 小時，不會再列出。
