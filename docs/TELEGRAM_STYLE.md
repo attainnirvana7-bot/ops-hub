@@ -20,7 +20,7 @@
 
 | 專案 | 標題 | 摘要 | 按鈕 |
 |---|---|---|---|
-| ops-hub | 🛡 ops-hub 心跳／ops-hub 異常 | `✅ 6/6 正常｜本月約 412 分`、各級異常數 | 最嚴重那筆異常的 Actions run 頁；全部正常不附 |
+| ops-hub | 🛡 ops-hub 心跳／ops-hub 異常 | `✅ 5/5 正常｜本月約 412 分`、各級異常數 | 最嚴重那筆異常的 Actions run 頁；全部正常不附 |
 | US_Macro_Feeds | 🏛 Fed／BLS 總經 | 新項目／重點數、下次 FOMC、10Y 與 10Y−2Y | 當日 `reports/Y/m/date.md` |
 | conflict-monitor | 🌐 全球衝突熱點 | 新增則數、熱度前兩區、摘要降級警示 | 當日 `reports/Y/date.md` |
 | Intl_Reg_Feeds | 🏦 國際監理動態 | 新增則數與各類型數、來源正常數、摘要降級／來源異常警示 | 當日 `reports/Y/m/date.md` |

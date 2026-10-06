@@ -25,7 +25,7 @@ def instances(target: Target, now: dt.datetime, tz: ZoneInfo,
     """回傳 deadline 落在 (now - lookback, now] 的時段。
 
     早晚兩次檢查各自回看 24 小時，所以每個時段在「grace 過後的第一次檢查」一定會被評估到；
-    weekday 判斷用的是台北日期（FSC 週六、USA 週四都不會被預期）。
+    weekday 判斷用的是台北日期（FSC 週六、TW update 週二都不會被預期）。
     """
     now_local = now.astimezone(tz)
     out = []
