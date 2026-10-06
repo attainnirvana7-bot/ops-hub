@@ -152,7 +152,8 @@ python -m unittest discover -s tests -t . -v     # 測試（不需網路）
 | `OPS_HUB_CONFIG` / `OPS_HUB_STATE` | env | 否 | 預設 `watch.yaml` / `state/state.json` |
 
 cron-job.org 使用另一個 token（只有 Actions Read and write），只存在 cron-job.org，
-它的到期日要手動寫進 `watch.yaml` 的 `tokens`。
+它的到期日要手動寫進 `watch.yaml` 的 `tokens`。各 repo 用的 API 金鑰（例如 Intl_Reg_Feeds 的 `ANTHROPIC_API_KEY`）
+若有設到期日，也登記在同一處。
 
 本 repo 對其他 repo **沒有任何寫入權限**：寫入只用內建的 `GITHUB_TOKEN`（`contents: write`，限本 repo）。
 fine-grained token 的寫入權限無法用 API 安全地測試，換 token 時請到設定頁人工確認。
