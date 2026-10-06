@@ -4,11 +4,11 @@
 
 ```
 🛡 ops-hub 心跳｜2026-10-05（一）
-✅ 6/6 正常｜本月 Actions 約 412 分（帳單）
+✅ 7/7 正常｜本月 Actions 約 412 分（帳單）
 ```
 
 有異常時，細節放在可展開的引用區塊，底部的「📄 完整報告」按鈕連到最嚴重那筆異常的 Actions 執行頁。
-五個專案共用的版面規格見 [`docs/TELEGRAM_STYLE.md`](docs/TELEGRAM_STYLE.md)。
+六個專案共用的版面規格見 [`docs/TELEGRAM_STYLE.md`](docs/TELEGRAM_STYLE.md)。
 
 會檢查：時段內是否有觸發、conclusion（failure / cancelled / timed_out…）、產出物是否存在、
 執行時間是否暴增、workflow 是否被停用、本月 Actions 分鐘數，以及 token 是否即將到期。
@@ -31,11 +31,11 @@
 
 ## 設定 Telegram 主題群組
 
-五個專案可以改發到同一個開啟「主題（Topics）」的私人群組，每個專案一個主題。
+六個專案可以改發到同一個開啟「主題（Topics）」的私人群組，每個專案一個主題。
 未設定主題變數時，各專案照舊發到原本的 chat，可以逐一切換。
 
 1. 在 Telegram 建立私人群組，群組設定裡開啟「主題（Topics）」，為每個專案建一個主題
-   （例如 ops-hub、Fed 總經、衝突熱點、金管會、垃圾清運）。
+   （例如 ops-hub、Fed 總經、衝突熱點、金管會、垃圾清運、國際監理）。
 2. 把各專案用的 bot 都加進群組（看門狗 bot、RegWatch bot，以及其他專案共用的 bot），
    並設為**管理員**（只需要「發送訊息」權限）。不設管理員的話，要先到 BotFather 對該 bot
    `/setprivacy` → Disable，否則 bot 收不到一般訊息、下一步查不到主題。
@@ -57,6 +57,7 @@
    | ops-hub | `WATCHDOG_TG_CHAT` | `WATCHDOG_TG_THREAD` |
    | US_Macro_Feeds | `TELEGRAM_CHAT_ID` | `TELEGRAM_THREAD_ID`（選用：`REPORT_BASE_URL`） |
    | conflict-monitor | `TELEGRAM_CHAT_ID` | `TELEGRAM_THREAD_ID`（選用：`REPORT_BASE_URL`） |
+   | Intl_Reg_Feeds | `TELEGRAM_CHAT_ID` | `TELEGRAM_THREAD_ID`（選用：`REPORT_BASE_URL`） |
    | FSC_Corpus | `REGWATCH_TG_CHAT` | `REGWATCH_TG_THREAD`（選用：`REGWATCH_REPORT_BASE_URL`） |
    | Rubbish_Clearance | `TELEGRAM_CHAT_ID` | `TELEGRAM_THREAD_ID` |
 
