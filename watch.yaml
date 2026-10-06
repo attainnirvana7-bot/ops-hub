@@ -28,6 +28,8 @@ token_warn_days: 14
 tokens:
   - name: cron-job.org 觸發用 token
     expires: 2027-10-05
+  - name: Intl_Reg_Feeds 的 ANTHROPIC_API_KEY      # 換新後到該 repo 跑 workflow 的 diagnose 確認
+    expires: 2027-10-05
 
 targets:
   - repo: conflict-monitor
