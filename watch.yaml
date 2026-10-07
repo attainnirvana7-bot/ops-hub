@@ -14,7 +14,7 @@ timezone: Asia/Taipei
 minutes:
   warn_at: 1500           # 私有 repo 合計
   included: 2000          # 免費方案額度
-  per_repo_warn_at: 800   # 單一 repo
+  per_repo_warn_at: 1200  # 單一 repo（TW 回補期間 800 會天天觸發，10/7 調高）
 
 duration:
   window: 14              # 取近 14 次成功執行的中位數
