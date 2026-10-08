@@ -1,13 +1,9 @@
 {
  "heartbeat_sent": "2026-10-08",
- "last_run": "2026-10-08T01:53:14+00:00",
+ "last_run": "2026-10-08T09:29:51+00:00",
  "alerted": {
   "Intl_Reg_Feeds|slot1|2026-10-06|未觸發": "2026-10-06T09:26:20.488068+00:00",
-  "Rubbish_Clearance|slot1|2026-10-05|未觸發": "2026-10-05T05:53:25.868729+00:00",
-  "TW_Stock_Investment_Strategy|nightly|2026-10-04|未觸發": "2026-10-05T05:53:25.868729+00:00",
   "TW_Stock_Investment_Strategy|nightly|2026-10-05|產出物": "2026-10-05T15:23:16.784541+00:00",
-  "TW_Stock_Investment_Strategy|update|2026-10-05|未觸發": "2026-10-05T05:53:25.868729+00:00",
-  "US_Macro_Feeds|slot1|2026-10-05|未觸發": "2026-10-05T05:53:25.868729+00:00",
   "minutes|2026-10|TW_Stock_Investment_Strategy": "2026-10-07T09:18:49.522356+00:00"
  },
  "minutes_cache": {}
