@@ -172,6 +172,8 @@ class TargetChecker:
         if a.commit_path:
             since = inst.start.astimezone(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
             commits = self.gh.get(f"{self.base}/commits", {"path": a.commit_path, "since": since, "per_page": 1})
+            if not commits and a.ok_if_step and self._step_ran(inst, a.ok_if_step):
+                return                    # 例如休市日：抓取與新鮮度檢查都跑完，只是沒有新資料
             if not commits:
                 self.add("產出物缺漏", f"{inst.label()} 時段後 {a.commit_path} 沒有新 commit",
                          run.get("html_url"), severity=a.severity, key=key)
@@ -189,6 +191,22 @@ class TargetChecker:
                 if exc.status != 404:
                     raise
         self.add("產出物缺漏", f"找不到 {tried[0]}", run.get("html_url"), severity=a.severity, key=key)
+
+    def _step_ran(self, inst: SlotInstance, step: str) -> bool:
+        """時段內是否有成功的 run 真的執行了這個步驟（被 guard 略過的 run 不算）。
+
+        TW 的新鮮度檢查失敗時，最後一步會讓整個 run 變成 failure，所以「run 成功且
+        這一步 success」就代表資料是最新的——沒有新 commit 只是因為沒有新交易日。
+        """
+        runs = runs_for(inst, self.runs, self.workflow_name, self.cfg.early_min)
+        for r in reversed(runs):
+            if r.get("status") != "completed" or r.get("conclusion") != "success":
+                continue
+            jobs = self.gh.get(f"{self.base}/actions/runs/{r['id']}/jobs").get("jobs") or []
+            if any(s.get("name") == step and s.get("conclusion") == "success"
+                   for j in jobs for s in j.get("steps") or []):
+                return True
+        return False
 
     def check_duration(self, inst: SlotInstance, run: dict) -> None:
         dur = run_duration(run)

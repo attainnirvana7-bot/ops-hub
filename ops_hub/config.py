@@ -61,6 +61,7 @@ class Artifact:
     only_weekdays: bool = False
     slot: str | None = None           # 只檢查這個時段
     severity: str = "error"           # error / warn
+    ok_if_step: str | None = None     # commit 檢查：時段內成功的 run 有跑完這個步驟，就不算缺漏（休市日）
 
 
 @dataclass(frozen=True)
@@ -118,6 +119,7 @@ def _parse_artifact(raw) -> Artifact | None:
         only_weekdays=raw.get("only") == "weekdays",
         slot=raw.get("slot"),
         severity=raw.get("severity", "error"),
+        ok_if_step=raw.get("ok_if_step"),
     )
 
 

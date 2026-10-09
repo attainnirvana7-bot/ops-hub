@@ -57,7 +57,7 @@ state/state.json
 | US_Macro_Feeds | daily.yml | 每日 08:30 | 80 分（含 09:30 備援） | `reports/{Y}/{m}/{date}.md` | 同上 |
 | Rubbish_Clearance | daily-notify.yml | 每日 06:30 | 45 分 | 無（只推播） | 只有 cron-job.org |
 | FSC_Corpus | daily.yml | 平日 18:07 | 120 分（含 19:37 備援） | `corpus/manifest/{date}.json`（容許 +1 天） | cron-job.org + GitHub 備援 |
-| TW_Stock_Investment_Strategy | scrape.yml | nightly 每日 22:40、update 週一 11:03 | 40 / 90 分 | 平日夜間時段後 `data/fetch_log` 要有 commit（警告級） | 同上；另有 09:07 morning 純 GitHub 備援 |
+| TW_Stock_Investment_Strategy | scrape.yml | nightly 每日 22:40、update 週一 11:03 | 40 / 90 分 | 平日夜間時段後 `data/fetch_log` 要有 commit（警告級；時段內成功的 run 跑完新鮮度檢查時視為休市日，不報） | 同上；另有 09:07 morning 純 GitHub 備援 |
 
 FSC、TW 兩個 repo 的外部觸發與 guard 由各自的 PR 加入（`scheduled` input）。
 **PR 合併前**：TW 的 run 標題還是 workflow 名稱，看門狗會把它視為可以對應任何時段，不會誤判成未觸發。

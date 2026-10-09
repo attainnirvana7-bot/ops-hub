@@ -202,6 +202,29 @@ class TwTest(unittest.TestCase):
         res = self.check(runs, utc("2026-10-02T01:53:00Z"), commits=[])
         self.assertIn("產出物缺漏", kinds(res, WARN))
 
+    def holiday(self, freshness: str):
+        """10/9（五）國慶補假：22:40 的 nightly 完整跑完，但沒有新交易日，fetch_log 沒有 commit。"""
+        cfg = make_cfg([{**TW, "artifact": {**TW["artifact"], "ok_if_step": "Check the daily data is current"}}])
+        runs = [make_run(7, "2026-10-09T14:40:21Z", title="scrape · nightly", minutes=2,
+                         repo="TW_Stock_Investment_Strategy")]
+        routes = workflow_routes("TW_Stock_Investment_Strategy", "scrape.yml", runs, name=TW_NAME)
+        routes[f"{base('TW_Stock_Investment_Strategy')}/commits"] = []
+        routes[f"{base('TW_Stock_Investment_Strategy')}/actions/runs/7/jobs"] = {"jobs": [{"steps": [
+            {"name": "Run daily price update", "conclusion": "success" if freshness == "success" else "skipped"},
+            {"name": "Check the daily data is current", "conclusion": freshness}]}]}
+        gh, _ = make_gh(routes)
+        return check_target(gh, cfg, cfg.targets[0], utc("2026-10-09T15:23:00Z"))
+
+    def test_market_holiday_with_fresh_data_is_not_reported(self):
+        res = self.holiday("success")
+        self.assertNotIn("產出物缺漏", kinds(res))
+        self.assertTrue(res.ok, res.findings)
+
+    def test_skipped_run_still_reports_missing_commit(self):
+        # 被 guard 略過的 run 沒有跑新鮮度檢查，不能當作「資料是最新的」
+        res = self.holiday("skipped")
+        self.assertIn("產出物缺漏", kinds(res, WARN))
+
     def test_no_commit_on_weekend_is_fine(self):
         runs = [make_run(1, "2026-10-03T14:40:30Z", title="scrape · nightly", minutes=2,
                          repo="TW_Stock_Investment_Strategy")]

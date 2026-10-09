@@ -73,4 +73,7 @@ targets:
       commit_since_slot: data/fetch_log              # 夜間時段後 fetch_log 要有新 commit
       only: weekdays                                 # 週末沒有交易資料
       slot: nightly
-      severity: warn                                 # 颱風假等休市日會誤報，只列警告
+      severity: warn
+      # 休市日（國定假日、颱風假）沒有新資料、也就沒有 commit：只要時段內成功的 run 有跑完
+      # 新鮮度檢查（失敗會讓整個 run 失敗），就不報缺漏。10/9 國慶補假曾因此誤報。
+      ok_if_step: Check the daily data is current
