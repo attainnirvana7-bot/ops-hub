@@ -56,7 +56,7 @@ def ts(raw: str | None) -> dt.datetime | None:
 
 
 def run_duration(run: dict) -> float | None:
-    """completed run 的時長（秒）：run_started_at → updated_at。"""
+    """completed run 的時長（秒）：run_started_at → updated_at（可能偏長，超標時見 _jobs_span）。"""
     if run.get("status") != "completed":
         return None
     start, end = ts(run.get("run_started_at") or run.get("created_at")), ts(run.get("updated_at"))
@@ -227,9 +227,25 @@ class TargetChecker:
             return
         med = statistics.median(samples)
         if dur > self.cfg.duration_factor * med:
+            # run 的 updated_at 在結束後還可能被 GitHub 更新（10/22 TW nightly 的 job 只跑 1 分 46 秒，
+            # updated_at 卻晚了 10 分鐘，被算成 13 分）。超標時以 jobs 的實際起訖時間確認。
+            dur = self._jobs_span(run) or dur
+        if dur > self.cfg.duration_factor * med:
             self.add("執行時間異常",
                      f"{inst.label()} 時段執行 {dur / 60:.0f} 分，近 {len(samples)} 次中位數 {med / 60:.1f} 分",
                      run.get("html_url"), severity=WARN, key=f"{self.t.repo}|{inst.slot.name}|{inst.date}|時長")
+
+    def _jobs_span(self, run: dict) -> float | None:
+        """run 內所有 job 從最早開始到最晚結束的秒數；讀不到時回 None（退回 run 的時間戳）。"""
+        try:
+            jobs = self.gh.get(f"{self.base}/actions/runs/{run['id']}/jobs").get("jobs") or []
+        except Exception:
+            return None
+        starts = [ts(j.get("started_at")) for j in jobs]
+        ends = [ts(j.get("completed_at")) for j in jobs]
+        if not jobs or not all(starts) or not all(ends):
+            return None
+        return (max(ends) - min(starts)).total_seconds()
 
     def check_other_runs(self, accounted: set[int]) -> None:
         """時段以外的異常 run（例如 GitHub cron 備援、手動執行）。"""

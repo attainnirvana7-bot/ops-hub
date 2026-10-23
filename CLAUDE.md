@@ -102,6 +102,7 @@ startup_failure / action_required / stale` 一律算異常。例外：被 concur
 **執行時間只跟同一時段比。** TW 用 run 標題（`scrape · nightly`）區分時段，
 回補期的 5 小時不會被拿去跟 3 分鐘的 morning 比。短於 2 分鐘的 run（guard 略過的）
 不列入中位數；樣本少於 5 個時不判斷。
+時長用 run 的 `run_started_at → updated_at` 初篩，但 `updated_at` 在 run 結束後還可能被 GitHub 更新（10/22 TW nightly 的 job 只跑 1 分 46 秒，卻被算成 13 分而誤報），所以超標時會改用 jobs API 的實際起訖時間確認，確認後仍超標才報。
 
 **guard 用「12 小時內有成功 run」判斷，不看日期**（FSC / TW）。延遲的備援可能
 跨過台北午夜才跑，用日期判斷會以為今天還沒跑。只有 success 才算，所以主要觸發失敗時，

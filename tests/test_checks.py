@@ -97,6 +97,25 @@ class ConflictMonitorTest(unittest.TestCase):
         res = self.check(runs, utc("2026-10-02T01:53:00Z"), art)
         self.assertIn("執行時間異常", kinds(res, WARN))
 
+    def test_duration_uses_job_times_when_run_updated_late(self):
+        # 10/22 TW nightly 實例：job 14:40:25–14:42:11，run 的 updated_at 卻是 14:52:56
+        art = {f"{base('conflict-monitor')}/contents/reports/2026/2026-10-02.md": {"type": "file"},
+               f"{base('conflict-monitor')}/actions/runs/1/jobs": {"jobs": [
+                   {"started_at": "2026-10-01T23:43:05Z", "completed_at": "2026-10-01T23:44:51Z"}]}}
+        history = [make_run(100 + i, f"2026-09-{20 + i}T23:43:00Z", minutes=2.5) for i in range(8)]
+        runs = [make_run(1, "2026-10-01T23:43:00Z", minutes=13)] + history
+        res = self.check(runs, utc("2026-10-02T01:53:00Z"), art)
+        self.assertNotIn("執行時間異常", kinds(res))
+
+    def test_duration_anomaly_confirmed_by_job_times(self):
+        art = {f"{base('conflict-monitor')}/contents/reports/2026/2026-10-02.md": {"type": "file"},
+               f"{base('conflict-monitor')}/actions/runs/1/jobs": {"jobs": [
+                   {"started_at": "2026-10-01T23:43:05Z", "completed_at": "2026-10-02T00:03:00Z"}]}}
+        history = [make_run(100 + i, f"2026-09-{20 + i}T23:43:00Z", minutes=3) for i in range(8)]
+        runs = [make_run(1, "2026-10-01T23:43:00Z", minutes=20)] + history
+        res = self.check(runs, utc("2026-10-02T01:53:00Z"), art)
+        self.assertIn("執行時間異常", kinds(res, WARN))
+
     def test_duration_ignores_guard_skips(self):
         # guard 略過的 10 秒 run 不列入中位數，正常的 3 分鐘執行不應被誤判
         art = {f"{base('conflict-monitor')}/contents/reports/2026/2026-10-02.md": {"type": "file"}}
