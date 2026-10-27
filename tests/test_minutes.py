@@ -77,6 +77,31 @@ class EstimateTest(unittest.TestCase):
         self.assertNotIn("5", cache["runs"])
 
 
+class PaceTest(unittest.TestCase):
+    def test_allowance_shrinks_after_heavy_days(self):
+        # 10/1–10/4 回補各 300 分；10/5 的配額 = (2000 − 1200) ÷ 27 = 29 分
+        m = minutes.Minutes(daily={f"2026-10-0{d}": {TW: 300} for d in range(1, 5)} | {"2026-10-05": {TW: 25}})
+        p = minutes.pace(m, utc("2026-10-06T01:53:00Z"), 2000)
+        self.assertEqual((p.day.isoformat(), p.used, p.allowance), ("2026-10-05", 25, 29))
+        self.assertEqual(p.avg, 245)                     # 1225 ÷ 5
+        self.assertEqual(p.forecast, 7595)
+
+    def test_first_day_of_month_has_no_pace(self):
+        m = minutes.Minutes(daily={"2026-09-30": {TW: 10}})
+        self.assertIsNone(minutes.pace(m, utc("2026-10-01T01:53:00Z"), 2000))
+
+    def test_estimate_records_daily_and_rebuilds_old_cache(self):
+        runs = [make_run(2, "2026-10-01T00:10:00Z"), make_run(3, "2026-10-02T03:00:00Z")]
+        r = {f"/repos/{OWNER}/{TW}/actions/runs": runs_route(runs),
+             f"/repos/{OWNER}/{TW}/actions/runs/2/jobs": {"jobs": [job("2026-10-01T00:10:00Z", "2026-10-01T00:12:30Z")]},
+             f"/repos/{OWNER}/{TW}/actions/runs/3/jobs": {"jobs": [job("2026-10-02T03:00:00Z", "2026-10-02T03:04:00Z")]}}
+        gh, _ = make_gh(r)
+        cache = {"month": "2026-10", "runs": {"2": [TW, 3]}}           # 舊格式（沒有日期）
+        m = minutes.estimate(gh, OWNER, [TW], utc("2026-10-02T05:00:00Z"), cache)
+        self.assertEqual(m.daily, {"2026-10-01": {TW: 3}, "2026-10-02": {TW: 4}})
+        self.assertEqual(cache["runs"]["2"], [TW, 3, "2026-10-01"])
+
+
 class BillingTest(unittest.TestCase):
     def test_billing_preferred(self):
         gh, sess = make_gh({f"/users/{OWNER}/settings/billing/usage": fixture("billing_usage.json")})

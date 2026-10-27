@@ -18,7 +18,10 @@ APP_ICON = "🛡"
 def _minutes_text(m: Minutes | None) -> str:
     if m is None:
         return "本月 Actions 分鐘數無法取得"
-    return f"本月 Actions 約 {m.total:,} 分（{m.source}）"
+    text = f"本月 Actions 約 {m.total:,} 分（{m.source}）"
+    if m.forecast is not None:
+        text += f"，月底預估 {m.forecast:,}"
+    return text
 
 
 def _who(f: Finding) -> str:

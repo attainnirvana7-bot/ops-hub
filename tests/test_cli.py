@@ -138,17 +138,39 @@ class RunTest(unittest.TestCase):
         self.assertEqual(s.sent, [])
         self.assertFalse(self.path.exists())
 
-    def test_minutes_warning(self):
+    def billing(self, items):
         r = routes(GOOD_CM, GOOD_RB)
         r[f"/users/{OWNER}/settings/billing/usage"] = {"usageItems": [
-            {"product": "actions", "unitType": "minutes", "quantity": 900, "repositoryName": "TW"},
-            {"product": "actions", "unitType": "minutes", "quantity": 700, "repositoryName": "FSC"}]}
+            {"product": "actions", "unitType": "minutes", "date": f"{d}T00:00:00Z", "quantity": q,
+             "repositoryName": repo} for d, repo, q in items]}
         s = Sender()
         self.go(MORNING, "morning", r, s)
-        self.assertTrue(s.sent[0].header[1].startswith("⚠️ 2/2 正常｜本月 Actions 約 1,600 分"))
-        self.assertIn("用量偏高", s.sent[0].text)
-        self.assertIn("TW — 分鐘數偏高", s.sent[0].text)
-        self.assertNotIn("FSC — 分鐘數偏高", s.sent[0].text)
+        return s.sent[0]
+
+    def test_daily_spike_warns(self):
+        # 10/1 一天用 900 分，每日配額 2000 ÷ 31 = 64 分
+        msg = self.billing([("2026-10-01", "TW", 900), ("2026-10-01", "FSC", 20), ("2026-10-02", "TW", 5)])
+        self.assertTrue(msg.header[1].startswith("⚠️ 2/2 正常｜本月 Actions 約 925 分（帳單）"))   # 不到 7 天不顯示預估
+        self.assertIn("單日用量偏高", msg.text)
+        self.assertIn("10/01（UTC）用了 920 分，超過每日配額 64 分", msg.text)
+        self.assertIn("主要是 TW 900 分、FSC 20 分", msg.text)
+
+    def test_high_total_but_normal_day_is_quiet(self):
+        # 累計已高（10/27 實況），但昨天只用 20 分、仍在配額內：不報
+        now = utc("2026-10-27T01:53:00Z")
+        items = [(f"2026-10-{d:02d}", "TW", 60) for d in range(1, 26)] + [("2026-10-26", "TW", 20)]
+        r = routes(GOOD_CM, GOOD_RB)
+        r[f"/users/{OWNER}/settings/billing/usage"] = {"usageItems": [
+            {"product": "actions", "unitType": "minutes", "date": f"{d}T00:00:00Z", "quantity": q,
+             "repositoryName": repo} for d, repo, q in items]}
+        out = cli.collect(self.cfg, make_gh(r)[0], now, State())
+        self.assertEqual(out.minutes.total, 1520)
+        self.assertEqual(out.minutes.forecast, 1812)          # 1520 ÷ 26 × 31
+        self.assertNotIn("單日用量偏高", [f.kind for f in out.general])
+
+    def test_over_quota_is_error(self):
+        msg = self.billing([("2026-10-01", "TW", 2100)])
+        self.assertIn("已超過免費額度", msg.text)
 
     def test_auto_mode(self):
         self.assertEqual(cli.resolve_mode("auto", MORNING, self.cfg), "morning")

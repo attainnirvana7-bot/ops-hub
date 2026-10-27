@@ -12,9 +12,9 @@ owner: attainnirvana7-bot
 timezone: Asia/Taipei
 
 minutes:
-  warn_at: 1500           # 私有 repo 合計
-  included: 2000          # 免費方案額度
-  per_repo_warn_at: 1200  # 單一 repo（TW 回補期間 800 會天天觸發，10/7 調高）
+  # 逐日評估：昨天（UTC）的用量超過「(額度 − 之前已用) ÷ 當天起剩餘天數」才警告；
+  # 累計超過額度則每天報錯。不再用固定累計門檻（過了門檻會天天警示，10/27 改）。
+  included: 2000          # 免費方案額度（私有 repo 合計）
 
 duration:
   window: 14              # 取近 14 次成功執行的中位數

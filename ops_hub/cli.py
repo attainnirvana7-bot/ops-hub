@@ -68,15 +68,23 @@ def collect(cfg: Config, gh: GitHub, now: dt.datetime, state: State) -> Outcome:
     try:
         m = minutes_mod.compute(gh, cfg.owner, private, public, now, state.minutes_cache)
         out.minutes = m
-        if m.total >= cfg.minutes_warn_at:
-            out.general.append(Finding("Actions 分鐘數", "用量偏高",
-                                       f"本月已用 {m.total:,} 分，超過 {cfg.minutes_warn_at:,}（額度 {cfg.minutes_included:,}）",
-                                       severity=WARN, key=f"minutes|{month}|total"))
-        for repo, used in sorted(m.per_repo.items()):
-            if used >= cfg.minutes_per_repo_warn_at:
-                out.general.append(Finding(repo, "分鐘數偏高",
-                                           f"本月已用 {used:,} 分，超過單一 repo 門檻 {cfg.minutes_per_repo_warn_at:,}",
-                                           severity=WARN, key=f"minutes|{month}|{repo}"))
+        if m.total >= cfg.minutes_included:
+            out.general.append(Finding("Actions 分鐘數", "已超過免費額度",
+                                       f"本月已用 {m.total:,} 分，額度 {cfg.minutes_included:,}",
+                                       key=f"minutes|{month}|over"))
+        else:
+            # 逐日評估：昨天的用量超過「剩餘額度 ÷ 剩餘天數」才報。累計多寡本身不報，
+            # 否則一旦過了固定門檻，之後即使每天只用幾分鐘也會天天警示。
+            p = minutes_mod.pace(m, now, cfg.minutes_included)
+            m.forecast = p.forecast if p and p.day.day >= 7 else None   # 樣本不到 7 天時預估太跳動
+            if p and p.used > p.allowance:
+                top = "、".join(f"{r} {v:,} 分" for r, v in p.top)
+                out.general.append(Finding(
+                    "Actions 分鐘數", "單日用量偏高",
+                    f"{p.day:%m/%d}（UTC）用了 {p.used:,} 分，超過每日配額 {p.allowance:,} 分"
+                    f"（剩餘額度 ÷ 剩餘天數）；主要是 {top or '（無明細）'}。"
+                    f"本月平均每日 {p.avg:,} 分，照此速度月底約 {p.forecast:,} 分（額度 {cfg.minutes_included:,}）",
+                    severity=WARN, key=f"minutes|{p.day}|daily"))
     except Exception as exc:                     # noqa: BLE001
         log.warning("分鐘數計算失敗：%s", exc)
         out.general.append(Finding("Actions 分鐘數", "檢查失敗", str(exc), key="minutes|error"))

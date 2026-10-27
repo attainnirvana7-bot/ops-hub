@@ -89,9 +89,7 @@ class Config:
     tz: ZoneInfo
     targets: list[Target]
     tokens: list[TokenNote] = field(default_factory=list)
-    minutes_warn_at: int = 1500
     minutes_included: int = 2000
-    minutes_per_repo_warn_at: int = 800
     duration_window: int = 14
     duration_factor: float = 3.0
     duration_min_seconds: int = 120
@@ -157,9 +155,7 @@ def from_dict(data: dict) -> Config:
         tz=ZoneInfo(data.get("timezone", "Asia/Taipei")),
         targets=[_parse_target(t) for t in data.get("targets") or []],
         tokens=tokens,
-        minutes_warn_at=int(minutes.get("warn_at", 1500)),
         minutes_included=int(minutes.get("included", 2000)),
-        minutes_per_repo_warn_at=int(minutes.get("per_repo_warn_at", 800)),
         duration_window=int(duration.get("window", 14)),
         duration_factor=float(duration.get("factor", 3)),
         duration_min_seconds=int(duration.get("min_seconds", 120)),
