@@ -4,8 +4,10 @@
 
 ```
 🛡 ops-hub 心跳｜2026-10-05（一）
-✅ 6/6 正常｜本月 Actions 約 412 分（帳單）
+✅ N/N 正常｜本月 Actions 約 412 分（帳單）
 ```
+
+N 為 `watch.yaml` 的監控數（`targets` 的筆數），增減 repo 時會自動跟著變。
 
 有異常時，細節放在可展開的引用區塊，底部的「📄 完整報告」按鈕連到最嚴重那筆異常的 Actions 執行頁。
 六個專案共用的版面規格見 [`docs/TELEGRAM_STYLE.md`](docs/TELEGRAM_STYLE.md)。
