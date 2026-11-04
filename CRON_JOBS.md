@@ -47,7 +47,7 @@ URL 格式：`https://api.github.com/repos/attainnirvana7-bot/<repo>/actions/wor
 
 GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token
 
-- Repository access：Only select repositories → 上表 7 個 repo（6 個監控對象 + ops-hub）。
+- Repository access：Only select repositories → 上表所有 repo（`watch.yaml` 的監控對象 + ops-hub）。
   已經建好的 token 不必重建：到 token 設定頁的 Repository access 加入 Intl_Reg_Feeds 即可（到期日不變）
 - Repository permissions：**Actions → Read and write**，其餘一律 No access（這個 token 不能讀寫程式碼）
 - Expiration：**請設在 2027 年以後**，避免在 11/15–12/8 出國期間到期
